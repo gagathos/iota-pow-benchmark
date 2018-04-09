@@ -1,0 +1,22 @@
+{
+  "name": "iota-pow-benchmark",
+  "version": "1.0.0",
+  "description": "Standard benchmark for POW performance on IOTA API endpoints",
+  "main": "benchmark.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "IOTA",
+    "POW"
+  ],
+  "author": "George Agathos",
+  "license": "ISC",
+  "dependencies": {
+    "columnify": "^1.5.4",
+    "commander": "^2.15.1",
+    "iota-generate-seed": "^1.0.0",
+    "iota.lib.js": "^0.4.7",
+    "semaphore": "^1.1.0"
+  }
+}
