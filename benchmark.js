@@ -65,17 +65,28 @@ function runReport(){
     maxBundleSize: program.maxBundleSize,
     publicTxns: program.broadcast ? 'yes' : 'no',
     minTime: 999999999999,
-    maxTime: 0
+    maxTime: 0,
+    totalTxns: 0,
+    totalTime: 0
   }
+  let times = []
   for(var i = 0; i < tests.length; i++){
     let test = tests[i]
     
     test.totalTime = test.endTime - test.startTime
     test.avgTime = test.totalTime / test.bundleSize
+    for(var k = 0; k < test.bundleSize; k++) {
+      times.push(test.avgTime)
+    }
     summary.maxTime = Math.max(summary.maxTime, test.avgTime)
     summary.minTime = Math.min(summary.minTime, test.avgTime)
+    summary.totalTxns += test.bundleSize
+    summary.totalTime += test.totalTime
     tests[i] = test
   }
+  times.sort()
+  summary.medianTime = times[Math.floor(times.length/2)]
+  summary.avgTime = summary.totalTime / summary.totalTxns
   let testColumns = columnify(tests, {
     columns: ['bundleSize', 'totalTime', 'avgTime']
   })
