@@ -4,10 +4,20 @@ IOTA POW Benchmarking for IRI API endpoints for attachToTangle performance (proo
 
 This is a command line app only right now
 
+## Installation
+
+Clone this repository, then run npm install in its directory
+
+```
+git clone https://github.com/gagathos/iota-pow-benchmark.git
+cd iota-pow-benchmark
+npm install
+```
+
 ## Usage
 
 ```
-  Usage: benchmark [options]
+  Usage: node benchmark.js [options]
 
   Options:
 
@@ -34,3 +44,9 @@ node benchmark.js --iri-host=https://field.carriota.com --iri-port=443 -h http:/
 ## Caveats
 
 This is still under development. We are obviously missing some metrics and also would like to develop some standard benchmarks that make sense for rating how an API endpoint would perform in real-world scenarios.
+
+## Donate
+
+Support my projects and make it more likely I will maintain these projects going forward:
+
+**IOTA:** S9HPAJXIIPEGZ9AZBZALTDDDRGGBQEMWMCPRHELZFD9KHFFIMMOABFSAPT9OXTSQ9YAUSCTJUTWWXLGHCICGGWQUUB
