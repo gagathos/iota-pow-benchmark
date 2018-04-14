@@ -67,7 +67,8 @@ function runReport(){
     minTime: 999999999999,
     maxTime: 0,
     totalTxns: 0,
-    totalTime: 0
+    totalTime: 0,
+    errors: 0
   }
   let times = []
   for(var i = 0; i < tests.length; i++){
@@ -78,10 +79,14 @@ function runReport(){
     for(var k = 0; k < test.bundleSize; k++) {
       times.push(test.avgTime)
     }
-    summary.maxTime = Math.max(summary.maxTime, test.avgTime)
-    summary.minTime = Math.min(summary.minTime, test.avgTime)
-    summary.totalTxns += test.bundleSize
-    summary.totalTime += test.totalTime
+    if(test.error){
+      summary.errors++
+    } else {
+      summary.maxTime = Math.max(summary.maxTime, test.avgTime)
+      summary.minTime = Math.min(summary.minTime, test.avgTime)
+      summary.totalTxns += test.bundleSize
+      summary.totalTime += test.totalTime
+    }
     tests[i] = test
   }
   times.sort()
