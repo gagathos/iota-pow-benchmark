@@ -14,9 +14,9 @@ program
   .option('-M, --max-bundle-size [maxbundles]', 'Maximum Bundle Size', 3)
   .option('-c, --concurrency [concurrency]', 'Max Concurrent Requests', 1)
   .option('-d, --depth [depth]', 'Number of times to repeat each test', 10)
-  .option('-h, --host [host]', 'POW API Hostname', 'localhost')
+  .option('-h, --host [host]', 'POW API Hostname', 'http://localhost')
   .option('-p, --port [port]', 'POW API Port #', 14265)
-  .option('-iri-h, --iri-host [host]', 'IRI API Hostname', 'localhost')
+  .option('-iri-h, --iri-host [host]', 'IRI API Hostname', 'http://localhost')
   .option('-iri-p, --iri-port [port]', 'IRI API Port #', 14265)
   .parse(process.argv)
  
