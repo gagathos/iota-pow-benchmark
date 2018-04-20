@@ -5,39 +5,42 @@ const program = require('commander')
 const columnify = require('columnify')
 const generate = require('iota-generate-seed')
 const semaphore = require('semaphore')
+const { performance } = require('perf_hooks')
 
 
 program
   .version('1.0.0')
   .option('-b, --broadcast', 'Broadcast transactions (for instance, to test Carriota Field nodes)', false)
   .option('-m, --mwm [mwm]', 'Minimum Weight Magnitude', 14)
+  .option('-f, --format [format]', 'Format (JSON, human)', 'human')
   .option('-M, --max-bundle-size [maxbundles]', 'Maximum Bundle Size', 3)
   .option('-c, --concurrency [concurrency]', 'Max Concurrent Requests', 1)
   .option('-d, --depth [depth]', 'Number of times to repeat each test', 10)
   .option('-h, --host [host]', 'POW API Hostname', 'http://localhost')
   .option('-p, --port [port]', 'POW API Port #', 14265)
-  .option('-iri-h, --iri-host [host]', 'IRI API Hostname', 'http://localhost')
-  .option('-iri-p, --iri-port [port]', 'IRI API Port #', 14265)
+  .option('-H, --iri-host [host]', 'IRI API Hostname', 'http://localhost')
+  .option('-P, --iri-port [port]', 'IRI API Port #', 14265)
   .parse(process.argv)
- 
+
+var testTime = {}
 var tests = []
 var running = 0
+var address = ''
 // in case they differ, we instantiate two different versions of API
 const iota = new IOTA({host: program.iriHost, port: program.iriPort}) 
 const pow = new IOTA({host: program.host, port: program.port})
 const limiter = semaphore(program.concurrency)
+
 // console.log(program)
 runTests()
 
-
 async function runTests(){
   let seed = generate()
-  let address = await getAddress(seed, 1)
+  address = await getAddress(seed, 1)
   let root = await getTransactionsToApprove(3)
-  console.log(address)
-  console.log(program.maxBundleSize + ' max bundles')
+  testTime.startTime = performance.now()
   for(var i = 1; i <= program.maxBundleSize; i++){
-    console.log('generating '+ program.depth + ' bundles of '+ i +' transactions')
+    if(program.format == 'human') console.log('generating '+ program.depth + ' bundles of '+ i +' transactions')
     for(var k = 0; k < program.depth; k++) {
       let transfers = createTransfer(address, i)
       running++
@@ -49,35 +52,38 @@ async function runTests(){
 
 async function checkForFinished(){
   if(running > 0){
-    console.log(running + ' remaining')
+    if(program.format == 'human') console.log(running + ' remaining')
     setTimeout(checkForFinished, 1000)
   } else {
+    testTime.endTime = performance.now()
     runReport()
   }
 }
 
 function runReport(){
-  console.log('Totally done!')
+  if(program.format == 'human') console.log('Totally done!')
   let bundleSummary = []
   let summary = {
     POWServer: program.host+':'+program.port,
-    Depth: program.depth,
+    depth: program.depth,
+    concurrency: program.concurrency,
     maxBundleSize: program.maxBundleSize,
     publicTxns: program.broadcast ? 'yes' : 'no',
     minTime: 999999999999,
     maxTime: 0,
     totalTxns: 0,
     totalTime: 0,
+    testTime: testTime.endTime - testTime.startTime,
     errors: 0
   }
+  if(program.broadcast) summary.address = address
   let times = []
   for(var i = 0; i < tests.length; i++){
     let test = tests[i]
-    
     test.totalTime = test.endTime - test.startTime
     test.avgTime = test.totalTime / test.bundleSize
     for(var k = 0; k < test.bundleSize; k++) {
-      times.push(test.avgTime)
+      times.push(Math.floor(test.avgTime))
     }
     if(test.error){
       summary.errors++
@@ -92,26 +98,32 @@ function runReport(){
   times.sort()
   summary.medianTime = times[Math.floor(times.length/2)]
   summary.avgTime = summary.totalTime / summary.totalTxns
-  let testColumns = columnify(tests, {
-    columns: ['bundleSize', 'totalTime', 'avgTime']
-  })
-  console.log(testColumns + '\n')
-  let summaryColumns = columnify(summary)
-  console.log(summaryColumns)
-  
+  switch(program.format){
+    case 'human':
+      let testColumns = columnify(tests, {
+        columns: ['bundleSize', 'totalTime', 'avgTime']
+      })
+      console.log(testColumns + '\n')
+      let summaryColumns = columnify(summary)
+      console.log(summaryColumns)
+      break
+    case 'JSON':
+      console.log(JSON.stringify({tests: tests, summary: summary}))
+      break
+  }
 }
 
 async function prepareAndAttach(seed, transfer, root) {
   iota.api.prepareTransfers(seed, transfer, function(error, trytes){
     limiter.take(() => {
       let test = {
-          startTime: Date.now(),
+          startTime: performance.now(),
           bundleSize: transfer.length
       }
-      pow.api.attachToTangle(root.trunk, root.branch, program.mwm, trytes, function(error, success){
-        test.endTime = Date.now()
+      pow.api.attachToTangle(root.trunk, root.branch, program.mwm, trytes, (error, success) => {
+        test.endTime = performance.now()
         if(error){
-          console.log(error)
+          if(program.format == 'human') console.log(error)
           test.error = error
         }
           console.log('Success!')
@@ -119,7 +131,7 @@ async function prepareAndAttach(seed, transfer, root) {
               let attached = iota.utils.transactionObject(success[0])
               iota.api.broadcastTransactions(success, (error, success) => {
                   if(success){
-                      console.log('POW successful and valid ' + attached.hash);
+                      if(program.format == 'human') console.log('POW successful and valid ' + attached.hash);
                       test.hash = attached.hash
                   } else {
                     test.error = error
