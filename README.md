@@ -22,7 +22,8 @@ npm install
   Options:
 
     -V, --version                       output the version number
-    -b, --broadcast                     Broadcast transactions
+    -b, --broadcast                     Broadcast transactions (default: transactions don't get sent to tangle)
+    -f, --format [format]               Format (JSON, human) (default: human)
     -m, --mwm [mwm]                     Minimum Weight Magnitude (default: 14)
     -M, --max-bundle-size [maxbundles]  Maximum Bundle Size (default: 3)
     -c, --concurrency [concurrency]     Max Concurrent Requests (default: 1)
@@ -33,6 +34,26 @@ npm install
     -iri-p, --iri-port [port]           IRI API Port # (default: 14265)
     -h, --help                          output usage information
 ```
+## Results
+
+```
+POWServer     # Full address of the POW server
+depth         # Depth (number of tests run per bundle size)                              
+concurrency   # Maximum simultaneous tests                                 
+maxBundleSize # Largest bundle size                                 
+publicTxns    # Did we broadcast our txns?
+address       # Address you can use to look up all the txns for this test (if you broadcasted them)
+estTPS        # Estimated transactions/second of entire test              
+minTime       # Quickest POW time (ms)                 
+maxTime       # Slowest POW time (ms)            
+totalTxns     # Total transactions created                              
+totalTime     # Total cumulative time of all POW work (ms)           
+testTime      # Overall test runtime from first POW request to completion (ms)                 
+errors        # Number of unsuccessful POW attempts                                 
+medianTime    # Median individual txn POW time (ms)                        
+avgTime       # Average individual txn POW time (ms)
+```
+Note that times for multi-transaction bundles are calculated as an average as we can only measure the API call for the entire batch of transfers in a bundle.
 
 ## Examples
 
