@@ -69,6 +69,7 @@ function runReport(){
     concurrency: program.concurrency,
     maxBundleSize: program.maxBundleSize,
     publicTxns: program.broadcast ? 'yes' : 'no',
+    estTPS: 0,
     minTime: 999999999999,
     maxTime: 0,
     totalTxns: 0,
@@ -95,9 +96,10 @@ function runReport(){
     }
     tests[i] = test
   }
-  times.sort()
+  times.sort((a, b) => a - b)
   summary.medianTime = times[Math.floor(times.length/2)]
   summary.avgTime = summary.totalTime / summary.totalTxns
+  summary.estTPS = summary.totalTxns/ (summary.testTime/ 1000) 
   switch(program.format){
     case 'human':
       let testColumns = columnify(tests, {
